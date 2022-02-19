@@ -39,7 +39,10 @@ module.exports.createUser = (req, res) => {
 
 module.exports.patchUser = (req, res) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(
+  if (!name || !about) {
+    return res.status(400).send({ message: 'Поля name и about должны быть заполнены' });
+  }
+  return User.findByIdAndUpdate(
     req.user._id,
     { name, about },
     // Передадим объект опций:
@@ -58,7 +61,6 @@ module.exports.patchUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        console.log(err);
         res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
@@ -68,7 +70,10 @@ module.exports.patchUser = (req, res) => {
 
 module.exports.patchUserAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(
+  if (!avatar) {
+    return res.status(400).send({ message: 'Поля avatar должны быть заполнены' });
+  }
+  return User.findByIdAndUpdate(
     req.user._id,
     { avatar },
     // Передадим объект опций:
