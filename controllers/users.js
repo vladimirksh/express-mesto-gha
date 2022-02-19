@@ -46,11 +46,18 @@ module.exports.patchUser = (req, res) => {
     {
       new: true, // обработчик then получит на вход обновлённую запись
       runValidators: true, // данные будут валидированы перед изменением
+      upsert: false, // если пользователь не найден, он не будет создан
     },
   )
-    .then((user) => { res.send({ data: user }); })
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь с указанным id не найден' });
+      } else {
+        res.send({ data: user });
+      }
+    })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError' && err.about === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
