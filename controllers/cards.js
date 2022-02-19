@@ -2,13 +2,7 @@ const Card = require('../models/card');
 
 module.exports.getCard = (req, res) => {
   Card.find({})
-    .then((cards) => {
-      if (!cards) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.send({ data: cards });
-      }
-    })
+    .then((cards) => { res.send({ data: cards }); })
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
 
@@ -36,13 +30,14 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(404).send({ message: 'Передан несуществующий id карточки' });
+      } else {
+        res.send({ data: card });
       }
-      res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Карточка не найдена' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -57,13 +52,14 @@ module.exports.putLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(404).send({ message: 'Передан несуществующий id карточки' });
+      } else {
+        res.send({ data: card });
       }
-      res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
@@ -78,13 +74,14 @@ module.exports.deleteLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(404).send({ message: 'Передан несуществующий id карточки' });
+      } else {
+        res.send({ data: card });
       }
-      res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Переданы некорректные данные для снятии лайка' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
