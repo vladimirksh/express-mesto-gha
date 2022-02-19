@@ -5,8 +5,9 @@ module.exports.getUsers = (req, res) => {
     .then((users) => {
       if (!users) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.send({ data: users });
       }
-      res.send({ data: users });
     })
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
@@ -16,10 +17,17 @@ module.exports.getUser = (req, res) => {
     .then((user) => {
       if (!user) {
         res.status(404).send({ message: 'Пользователь не найден' });
+      } else {
+        res.send({ data: user });
       }
-      res.send({ data: user });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(404).send({ message: 'Невалидный id пользователя' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.createUser = (req, res) => {
@@ -28,10 +36,17 @@ module.exports.createUser = (req, res) => {
     .then((user) => {
       if (!user) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.send({ data: user });
       }
-      res.send({ data: user });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.patchUser = (req, res) => {
@@ -48,11 +63,18 @@ module.exports.patchUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else {
+        res.send({ data: user });
       }
-      res.send({ data: user });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.patchUserAvatar = (req, res) => {
@@ -69,9 +91,16 @@ module.exports.patchUserAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else {
+        res.send({ data: user });
       }
-      res.send({ data: user });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };

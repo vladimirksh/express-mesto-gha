@@ -5,8 +5,9 @@ module.exports.getCard = (req, res) => {
     .then((cards) => {
       if (!cards) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.send({ data: cards });
       }
-      res.send({ data: cards });
     })
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 };
@@ -18,10 +19,17 @@ module.exports.createCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.send({ data: card });
       }
-      res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.deleteCard = (req, res) => {
@@ -32,7 +40,13 @@ module.exports.deleteCard = (req, res) => {
       }
       res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.putLike = (req, res) => {
@@ -43,11 +57,17 @@ module.exports.putLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Переданы некорректные данные' });
       }
       res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
 
 module.exports.deleteLike = (req, res) => {
@@ -58,9 +78,15 @@ module.exports.deleteLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
+        res.status(400).send({ message: 'Переданы некорректные данные' });
       }
       res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(404).send({ message: 'Карточка не найдена' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка' });
+      }
+    });
 };
