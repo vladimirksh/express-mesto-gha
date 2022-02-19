@@ -57,7 +57,8 @@ module.exports.patchUser = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' && err.about === 'ValidationError') {
+      if (err.name === 'ValidationError') {
+        console.log(err);
         res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
