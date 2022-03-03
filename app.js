@@ -6,6 +6,12 @@ const app = express();
 
 const { PORT = 3000 } = process.env;
 
+const {
+  getUsers, getUser, createUser, patchUser, patchUserAvatar, login,
+} = require('./controllers/users');
+
+const auth = require('./middlewares/auth');
+
 app.use(express.json());// It parses incoming req with JSON payloads and is based on body-parser.
 
 async function main() {
@@ -20,16 +26,15 @@ async function main() {
   console.log(`Listen ${PORT} port`);
 }
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '620cd1af7f6a94ba0f992630',
-  };
+// роуты, не требующие авторизации
+app.post('/signin', login);
+app.post('/signup', createUser);
 
-  next();
-});
+// авторизация
+app.use(auth);
 
-app.use('/users', require('./routes/users'));
-
+// роуты, которым авторизация нужна
+app.use('/users', getUsers, getUser, patchUser, patchUserAvatar);
 app.use('/cards', require('./routes/cards'));
 
 app.use((req, res) => {

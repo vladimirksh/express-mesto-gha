@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs'); // импортируем bcrypt
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 module.exports.getUsers = (req, res) => {
@@ -25,11 +27,19 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+  // хешируем пароль
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      email, password: hash, name, about, avatar,
+    }))
     .then((user) => { res.send({ data: user }); })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'MongoError' && err.code === 11000) {
+        res.status(409).send({ message: 'Данный email уже используется' });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
@@ -96,5 +106,21 @@ module.exports.patchUserAvatar = (req, res) => {
       } else {
         res.status(500).send({ message: 'Произошла ошибка' });
       }
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      // аутентификация успешна! пользователь в переменной user
+      // создадим токен
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.send({ token });
+    })
+    .catch((err) => {
+      // ошибка аутентификации
+      res.status(401).send({ message: err.message });
     });
 };
