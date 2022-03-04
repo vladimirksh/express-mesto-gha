@@ -2,13 +2,15 @@ const express = require('express');
 
 const mongoose = require('mongoose');
 
+const { errors } = require('celebrate');
+
 const app = express();
+
+const errorHandler = require('./middlewares/error-handler');
 
 const { PORT = 3000 } = process.env;
 
-const {
-  getUsers, getUser, createUser, patchUser, patchUserAvatar, login,
-} = require('./controllers/users');
+const { login, createUser } = require('./controllers/users');
 
 const auth = require('./middlewares/auth');
 
@@ -34,11 +36,15 @@ app.post('/signup', createUser);
 app.use(auth);
 
 // роуты, которым авторизация нужна
-app.use('/users', getUsers, getUser, patchUser, patchUserAvatar);
+app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
 app.use((req, res) => {
   res.status(404).send({ message: 'Страница не найдена' });
 });
+
+app.use(errors()); // обработчик ошибок celebrate
+
+app.use(errorHandler); // ыцентрализованный обработчик
 
 main();
