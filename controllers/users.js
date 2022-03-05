@@ -35,6 +35,19 @@ module.exports.getUser = (req, res, next) => {
     });
 };
 
+module.exports.getCurrentUser = (req, res, next) => {
+  const id = req.user._id;
+
+  User.findById(id)
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      res.send(err);
+    })
+    .catch(next);
+};
+
 module.exports.createUser = (req, res, next) => {
   const {
     email, password, name, about, avatar,
@@ -44,7 +57,13 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       email, password: hash, name, about, avatar,
     }))
-    .then((user) => { res.send({ data: user }); })
+    .then(() => {
+      res.send({
+        data: {
+          name, about, avatar, email,
+        },
+      });
+    })
     .catch((err) => {
       if (err.code === 11000) {
         next(new NotDoubleError('Данный email уже используется'));
@@ -60,9 +79,6 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.patchUser = (req, res, next) => {
   const { name, about } = req.body;
-  if (!name || !about) {
-    return res.status(400).send({ message: 'Поля name и about должны быть заполнены' });
-  }
   return User.findByIdAndUpdate(
     req.user._id,
     { name, about },
@@ -94,9 +110,6 @@ module.exports.patchUser = (req, res, next) => {
 
 module.exports.patchUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  if (!avatar) {
-    return res.status(400).send({ message: 'Поля avatar должны быть заполнены' });
-  }
   return User.findByIdAndUpdate(
     req.user._id,
     { avatar },

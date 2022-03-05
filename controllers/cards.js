@@ -35,28 +35,16 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  const guest = req.user._id;
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
+    .orFail(() => new NotFoundError('Передан несуществующий id карточки'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Передан несуществующий id карточки');
-        // res.status(404).send({ message: 'Передан несуществующий id карточки' });
-      } else if (guest !== card.owner) {
-        throw new NotOwnerError('Попытка удалить чужую карточку');
-        // res.status(403).send({ message: 'Попытка удалить чужую карточку' });
-      } else {
-        res.send({ data: card });
+      if (!card.owner.equals(req.user._id)) {
+        return next(new NotOwnerError('Попытка удалить чужую карточку'));
       }
+      return card.remove()
+        .then(() => res.send({ message: 'Карточка удалена' }));
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new NotValidateError('Переданы некорректные данные'));
-        // res.status(400).send({ message: 'Карточка не найдена' });
-      } else {
-        next(err);
-        // res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 };
 
 module.exports.putLike = (req, res, next) => {

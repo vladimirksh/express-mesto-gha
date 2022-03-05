@@ -1,15 +1,13 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const {
-  getUsers, getUser, createUser, patchUser, patchUserAvatar, login,
+  getUsers, getUser, patchUser, patchUserAvatar, getCurrentUser,
 } = require('../controllers/users');
 
 // сработает при GET-запросе на URL /users
 router.get('/', getUsers);
 
-router.post('/', createUser);
-
-router.post('/', login);
+router.get('/me', getCurrentUser);
 
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
@@ -20,8 +18,8 @@ router.get('/:userId', celebrate({
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
   }),
 }), patchUser);
 

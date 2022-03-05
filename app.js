@@ -2,9 +2,11 @@ const express = require('express');
 
 const mongoose = require('mongoose');
 
-const { errors } = require('celebrate');
+const { errors, celebrate, Joi } = require('celebrate');
 
 const app = express();
+
+const { NotFoundError } = require('./errors');
 
 const errorHandler = require('./middlewares/error-handler');
 
@@ -29,8 +31,19 @@ async function main() {
 }
 
 // роуты, не требующие авторизации
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), createUser);
 
 // авторизация
 app.use(auth);
@@ -39,8 +52,8 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use((req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' });
+app.use((req, res, next) => {
+  next(new NotFoundError('Страница не найдена'));
 });
 
 app.use(errors()); // обработчик ошибок celebrate
